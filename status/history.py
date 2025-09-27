@@ -28,3 +28,20 @@ def get_order_trades_summary(symbol: str, order_id: int):
 
     avg_price = (total_px_qty / total_qty) if total_qty > 0 else None
     return {"avg_price": avg_price, "filled_qty": total_qty, "commission": total_fee, "realized_pnl": total_realized}
+
+def calc_pnl_roi_from_order(symbol: str, order_id: int,
+                            entry_price_ref: float, iso_wallet_ref: float | None):
+    """
+    get_account_trades 기반으로 avg_price/realized/commission 합산하여
+    Net PnL(= realized - commission)과 ROI(= net / iso_wallet_ref) 계산.
+    반환: {"avg": float|None, "qty": float, "realized": float, "fee": float, "net": float, "roi": float|None}
+    """
+    
+    s = get_order_trades_summary(symbol, order_id)
+    avg = s["avg_price"]
+    qty = s["filled_qty"]
+    realized = s["realized_pnl"]
+    fee = s["commission"]
+    net = realized - fee
+    roi = (net / iso_wallet_ref) if iso_wallet_ref and iso_wallet_ref > 0 else None
+    return {"avg": avg, "qty": qty, "realized": realized, "fee": fee, "net": net, "roi": roi}

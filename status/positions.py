@@ -40,3 +40,7 @@ def get_position(symbol: str):
         "roiByMargin": roi_by_margin,
         "roiByNotional": roi_by_notional,
     }
+
+
+
+
