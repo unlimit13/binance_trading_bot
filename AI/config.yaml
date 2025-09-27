@@ -1,0 +1,22 @@
+symbol: "BTCUSDT"
+interval: "1m"
+start_date: "2024-01-01"
+decision_window: 120
+# 라벨 파라미터
+horizon: 5            # 분 단위 (H)
+theta: 0.0009         # ±0.06%
+
+# 학습/라이브
+model_path: "models/signal_1m_xgb.joblib"
+data_path: "data/btcusdt_1m.parquet"
+train_path: "data/train_1m.parquet"
+
+# 재학습 시 최근 N바만 사용(속도/메모리 제어)
+train_window_bars: 150000
+
+# 의사결정 임계
+min_conf: 0.58
+
+# 거래비용 가정 (백테스트용, 필요시 수정)
+taker_fee_each: 0.0004   # 진입 0.04%
+slippage: 0.0002         # 왕복 적용 시 2*fee + slippage

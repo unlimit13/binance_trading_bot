@@ -11,6 +11,10 @@ import time
 from infra.client import SYMBOL,TIF, LEVERAGE, LONG, SHORT, MIN_AMOUNT_PERCENTAGE, MIN_BUFFER, um
 from status.history import get_order_trades_summary, calc_pnl_roi_from_order
 from datetime import datetime
+from AI.decide import decide_action
+import subprocess
+import sys
+from datetime import datetime, timezone, timedelta
 
 profit = 0.0
 total_profit = 0.0
@@ -30,18 +34,44 @@ def log_transaction(tx_num: int, lines: list[str]):
         for line in lines:
             f.write(line + "\n")
 
+def run_hourly_update():
+    """hourly_update.py 실행"""
+    print(f"[{datetime.now(timezone.utc)}] 🚀 Running hourly_update.py ...")
+    subprocess.run([sys.executable, "hourly_update.py"], check=True)
+
+    
 
 def main():
     global fee, profit, total_profit, total_transactions, filled_by_sl, filled_by_tp, clear_by_idle
     ensure_leverage(SYMBOL, leverage=LEVERAGE)
     selected_side=LONG
-
+    next_update = datetime.now(timezone.utc).replace(second=0, microsecond=0) + timedelta(hours=3)
     while True:
-        if selected_side==LONG:
+        
+        # AI Model update
+        now = datetime.now(timezone.utc)
+        if now >= next_update:
+            run_hourly_update()
+            next_update = next_update + timedelta(hours=3)
+            
+        #Ai action detection    
+        result = decide_action(0.7, 120)
+        conf = result["confidence"]
+        action = result["action"]
+        
+        if action == "HOLD":
+            time.sleep(180)
+            continue
+        elif action == "BUY":
+            selected_side=LONG
+        elif action == "SELL":
             selected_side=SHORT
         else:
-            selected_side=LONG
+            print(f"[HOLD] 알 수 없는 액션: {action} (confidence={conf})")
+            time.sleep(80)
+            continue   
 
+        #MAIN LOGIC
         tx_lines = []
         bal = get_available_balance("USDT")
         tx_lines.append(f"[BALANCE] availableBalance={bal:.2f} USDT")
@@ -65,7 +95,7 @@ def main():
         if not pos:
             print("[ERROR] 포지션 오픈 실패 또는 즉시 체결 안 됨")
             res = cancel_limit_resting_orders(SYMBOL, include_partially_filled=True)
-            time.sleep(5)
+            time.sleep(180)
             continue
 
         entry_ref = pos["entryPrice"]
@@ -138,7 +168,7 @@ def main():
 
         log_transaction(total_transactions, tx_lines)
 
-        time.sleep(5)
+        time.sleep(300)
 
 
 if __name__ == "__main__":
