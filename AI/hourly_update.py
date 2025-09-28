@@ -1,27 +1,26 @@
-import pandas as pd
-from utils import load_config, ensure_dirs
-import subprocess, sys, pathlib
+# AI/hourly_update.py
+import subprocess, sys
+from pathlib import Path
 
-def run(cmd: list[str]):
-    print(">", " ".join(cmd))
-    res = subprocess.run(cmd, check=True)
-    return res.returncode
+def run_mod(mod: str, *args: str):
+    # 프로젝트 루트를 CWD로 고정
+    project_root = Path(__file__).resolve().parent.parent  # binance/
+    cmd = [sys.executable, "-m", mod, *args]
+    print(">", " ".join(cmd), f"(cwd={project_root})")
+    subprocess.run(cmd, check=True, cwd=str(project_root))
 
 def main():
-    cfg = load_config()
-    ensure_dirs()
-
     # 1) 새 데이터 수집(증분)
-    run([sys.executable, "fetch_klines.py", "--mode", "incremental"])
+    run_mod("AI.fetch_klines", "--mode", "incremental")
 
     # 2) 피처/라벨 갱신
-    run([sys.executable, "build_dataset.py"])
+    run_mod("AI.build_dataset")
 
     # 3) 재학습
-    run([sys.executable, "train.py"])
+    run_mod("AI.train")
 
     # 4) 최신 신호 출력(로그/모니터링용)
-    run([sys.executable, "decide.py"])
+    run_mod("AI.decide")
 
 if __name__ == "__main__":
     main()

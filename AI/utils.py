@@ -7,7 +7,7 @@ import numpy as np
 import yaml
 from dotenv import load_dotenv
 from binance.um_futures import UMFutures
-
+import pathlib
 load_dotenv()
 
 @dataclass
@@ -26,19 +26,26 @@ class Config:
     slippage: float
     use_testnet: bool
 
-def load_config(path: str = "config.yaml") -> Config:
+def load_config(path: str = None) -> Config:
+    if path is None:
+        # utils.py와 같은 디렉토리에 있는 config.yaml을 기본값으로
+        base = pathlib.Path(__file__).resolve().parent
+        path = base / "config.yaml"
+
     with open(path, "r") as f:
         cfg = yaml.safe_load(f)
+
     use_testnet = os.getenv("USE_TESTNET", "true").lower() == "true"
+
     return Config(
         symbol=cfg["symbol"],
         interval=cfg["interval"],
         start_date=cfg["start_date"],
         horizon=int(cfg["horizon"]),
         theta=float(cfg["theta"]),
-        model_path=cfg["model_path"],
-        data_path=cfg["data_path"],
-        train_path=cfg["train_path"],
+        model_path=str(pathlib.Path(path).parent / cfg["model_path"]),
+        data_path=str(pathlib.Path(path).parent / cfg["data_path"]),
+        train_path=str(pathlib.Path(path).parent / cfg["train_path"]),
         train_window_bars=int(cfg["train_window_bars"]),
         min_conf=float(cfg["min_conf"]),
         taker_fee_each=float(cfg["taker_fee_each"]),

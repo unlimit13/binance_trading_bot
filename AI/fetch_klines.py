@@ -1,7 +1,7 @@
 import argparse
 import pandas as pd
 import time
-from utils import load_config, get_um_client, ensure_dirs, utc_now_ms, to_utc_ts
+from AI.utils import load_config, get_um_client, ensure_dirs, utc_now_ms, to_utc_ts
 
 def fetch_range(client, symbol, interval, start_ms, end_ms, limit=1500) -> pd.DataFrame:
     rows=[]

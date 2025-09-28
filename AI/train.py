@@ -4,7 +4,7 @@ import numpy as np
 from joblib import dump
 from sklearn.model_selection import TimeSeriesSplit
 from xgboost import XGBClassifier
-from utils import load_config, ensure_dirs, FEATURES
+from AI.utils import load_config, ensure_dirs, FEATURES
 
 def train_once(df: pd.DataFrame, model_path: str, window_bars: int):
     if len(df) > window_bars:

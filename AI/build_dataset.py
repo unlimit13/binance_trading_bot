@@ -1,6 +1,6 @@
 import argparse
 import pandas as pd
-from utils import load_config, ensure_dirs, compute_features, make_labels, FEATURES
+from AI.utils import load_config, ensure_dirs, compute_features, make_labels, FEATURES
 
 def main():
     cfg = load_config()

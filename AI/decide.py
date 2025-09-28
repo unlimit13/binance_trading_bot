@@ -2,7 +2,7 @@
 import argparse
 import pandas as pd
 from joblib import load
-from utils import load_config, get_um_client, compute_features, FEATURES
+from AI.utils import load_config, get_um_client, compute_features, FEATURES
 from datetime import datetime, timezone
 import numpy as np
 

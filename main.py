@@ -15,6 +15,8 @@ from AI.decide import decide_action
 import subprocess
 import sys
 from datetime import datetime, timezone, timedelta
+from pathlib import Path
+from AI.hourly_update import run_mod
 
 profit = 0.0
 total_profit = 0.0
@@ -35,15 +37,23 @@ def log_transaction(tx_num: int, lines: list[str]):
             f.write(line + "\n")
 
 def run_hourly_update():
-    """hourly_update.py 실행"""
-    print(f"[{datetime.now(timezone.utc)}] 🚀 Running hourly_update.py ...")
-    subprocess.run([sys.executable, "hourly_update.py"], check=True)
+    project_root = Path(__file__).resolve().parent  # main.py가 있는 폴더
+    script_path = project_root / "AI" / "hourly_update.py"  # 위치가 다르면 경로를 맞춰주세요
+    print(f"[{datetime.now(timezone.utc)}] 🚀 Running {script_path} ...")
+    subprocess.run([sys.executable, str(script_path)], check=True,cwd=str(project_root))
+    
+def run_new_model():
+    run_mod("AI.fetch_klines", "--mode", "backfill")
+    run_mod("AI.build_dataset")
+    run_mod("AI.train")
 
     
 
 def main():
     global fee, profit, total_profit, total_transactions, filled_by_sl, filled_by_tp, clear_by_idle
     ensure_leverage(SYMBOL, leverage=LEVERAGE)
+    #un_new_model()
+    #run_hourly_update()
     selected_side=LONG
     next_update = datetime.now(timezone.utc).replace(second=0, microsecond=0) + timedelta(hours=3)
     while True:
@@ -60,6 +70,7 @@ def main():
         action = result["action"]
         
         if action == "HOLD":
+            print("HOLD")
             time.sleep(180)
             continue
         elif action == "BUY":
@@ -80,7 +91,7 @@ def main():
 
         min_margin_needed = (min_notional / LEVERAGE) * MIN_BUFFER
 
-        if bal < min_margin_needed:
+        if bal < min_margin_needed or bal < 500:
             print("[EXIT] 가용 잔고가 최소 주문 기준에 미달합니다. 루프 종료.")
             break
 
