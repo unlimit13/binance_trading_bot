@@ -3,8 +3,8 @@ interval: "1m"
 start_date: "2024-01-01"
 decision_window: 120
 # 라벨 파라미터
-horizon: 5            # 분 단위 (H)
-theta: 0.0009         # ±0.06%
+horizon: 15            # 분 단위 (H)
+theta: 0.009         # ±0.06%
 
 # 학습/라이브
 model_path: "models/signal_1m_xgb.joblib"
